@@ -1,9 +1,2 @@
-streamlit
 pandas
 numpy
-xgboost
-scikit-learn
-matplotlib
-seaborn
-openpyxl
-shap
