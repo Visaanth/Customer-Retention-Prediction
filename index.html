@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AI-Powered Telecom Customer Churn Prediction and Retention Intelligence Dashboard">
+  <title>Customer Churn Intelligence Dashboard</title>
+
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Chart.js Library -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Animated Mesh Background -->
+  <div class="bg-mesh">
+    <div class="bg-blob bg-blob-1"></div>
+    <div class="bg-blob bg-blob-2"></div>
+    <div class="bg-blob bg-blob-3"></div>
+  </div>
+
+  <!-- Top Navigation Bar -->
+  <header class="top-nav">
+    <div class="logo-container">
+      <div class="logo-icon">
+        <i class="fas fa-chart-line" style="color: white;"></i>
+      </div>
+      <span class="logo-text">ChurnGuard AI</span>
+    </div>
+
+    <div class="nav-actions">
+      <div class="status-badge" id="systemStatusBadge">
+        <span class="status-dot"></span>
+        <span>XGBoost ML Active</span>
+      </div>
+      <button class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Light/Dark Theme" aria-label="Toggle Light or Dark Theme">
+        <i class="fas fa-sun"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- App Main Container -->
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <ul class="nav-tabs" role="tablist">
+        <li class="nav-tab-item active" data-tab="overview" role="tab" aria-selected="true" tabindex="0">
+          <i class="fas fa-chart-pie"></i>
+          <span>Dashboard Analytics</span>
+        </li>
+        <li class="nav-tab-item" data-tab="lookup" role="tab" aria-selected="false" tabindex="0">
+          <i class="fas fa-user-search"></i>
+          <span>Customer Lookup</span>
+        </li>
+        <li class="nav-tab-item" data-tab="predictor" role="tab" aria-selected="false" tabindex="0">
+          <i class="fas fa-sliders-h"></i>
+          <span>Live Risk Predictor</span>
+        </li>
+        <li class="nav-tab-item" data-tab="batch" role="tab" aria-selected="false" tabindex="0">
+          <i class="fas fa-file-csv"></i>
+          <span>Batch CSV Scoring</span>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- Main Content Views -->
+    <main class="main-content">
+
+      <!-- ==========================================
+           TAB 1: OVERVIEW & ANALYTICS DASHBOARD
+           ========================================== -->
+      <section class="tab-view active" id="tab-overview">
+        <div class="page-header">
+          <h1 class="page-title">Executive Churn Overview</h1>
+          <p class="page-subtitle">Real-time predictive analytics and risk indicators across your customer base.</p>
+        </div>
+
+        <!-- 4 KPI Cards Grid -->
+        <div class="grid-4" style="margin-bottom: 1.5rem;">
+          <div class="card kpi-card">
+            <div class="kpi-icon-wrapper kpi-icon-indigo">
+              <i class="fas fa-users"></i>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Total Active Customers</span>
+              <span class="kpi-value" id="statTotalCustomers">7,043</span>
+              <span class="kpi-trend trend-down"><i class="fas fa-arrow-down"></i> -1.2% this month</span>
+            </div>
+          </div>
+
+          <div class="card kpi-card">
+            <div class="kpi-icon-wrapper kpi-icon-red">
+              <i class="fas fa-user-minus"></i>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Overall Churn Rate</span>
+              <span class="kpi-value" id="statChurnRate">26.5%</span>
+              <span class="kpi-trend trend-up"><i class="fas fa-arrow-up"></i> +0.4% baseline</span>
+            </div>
+          </div>
+
+          <div class="card kpi-card">
+            <div class="kpi-icon-wrapper kpi-icon-yellow">
+              <i class="fas fa-shield-exclamation"></i>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">High-Risk Customers</span>
+              <span class="kpi-value" id="statHighRiskCount">1,869</span>
+              <span class="kpi-trend trend-up"><i class="fas fa-exclamation-triangle"></i> Requires Action</span>
+            </div>
+          </div>
+
+          <div class="card kpi-card">
+            <div class="kpi-icon-wrapper kpi-icon-green">
+              <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Monthly Revenue at Risk</span>
+              <span class="kpi-value" id="statRevenueAtRisk">$142,500</span>
+              <span class="kpi-trend trend-down"><i class="fas fa-shield-alt"></i> Retention Priority</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2x2 Charts Grid -->
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">
+              <span><i class="fas fa-file-contract" style="color: var(--accent-primary); margin-right: 0.5rem;"></i> Churn Rate by Contract Type</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="contractChart"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">
+              <span><i class="fas fa-history" style="color: var(--accent-secondary); margin-right: 0.5rem;"></i> Tenure vs Churn Impact</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="tenureChart"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">
+              <span><i class="fas fa-chart-line" style="color: var(--accent-purple); margin-right: 0.5rem;"></i> Monthly Charges Risk Curve</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="chargesChart"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">
+              <span><i class="fas fa-list-ol" style="color: var(--risk-medium); margin-right: 0.5rem;"></i> Top Churn Drivers</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="reasonsChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           TAB 2: CUSTOMER RISK LOOKUP
+           ========================================== -->
+      <section class="tab-view" id="tab-lookup">
+        <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h1 class="page-title">Customer Risk Lookup</h1>
+            <p class="page-subtitle">Inspect individual customer profiles, predicted churn probabilities, and AI retention plans.</p>
+          </div>
+
+          <!-- Customer Search Dropdown -->
+          <div class="search-box-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" id="customerSearchInput" placeholder="Search Customer ID (e.g. 7590-VHVEG)..." autocomplete="off">
+            <div class="customer-dropdown-list" id="customerDropdownList"></div>
+          </div>
+        </div>
+
+        <div class="grid-3-1">
+          <!-- Profile Card -->
+          <div class="card">
+            <div class="profile-header-badge">
+              <div class="avatar-circle" id="profileAvatarLetter">C</div>
+              <div class="profile-name-id">
+                <h3 id="profileCustId">7590-VHVEG</h3>
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Active Subscriber</span>
+              </div>
+            </div>
+
+            <div class="profile-grid">
+              <div class="profile-field">
+                <div class="profile-field-label">Tenure</div>
+                <div class="profile-field-value" id="profileTenure">1 Month</div>
+              </div>
+              <div class="profile-field">
+                <div class="profile-field-label">Contract Type</div>
+                <div class="profile-field-value" id="profileContract">Month-to-month</div>
+              </div>
+              <div class="profile-field">
+                <div class="profile-field-label">Monthly Charge</div>
+                <div class="profile-field-value" id="profileMonthlyCharge">$29.85</div>
+              </div>
+              <div class="profile-field">
+                <div class="profile-field-label">Internet Type</div>
+                <div class="profile-field-value" id="profileInternetType">DSL</div>
+              </div>
+              <div class="profile-field">
+                <div class="profile-field-label">City</div>
+                <div class="profile-field-value" id="profileCity">Los Angeles</div>
+              </div>
+              <div class="profile-field">
+                <div class="profile-field-label">Tech Support</div>
+                <div class="profile-field-value" id="profileTechSupport">No</div>
+              </div>
+            </div>
+
+            <div class="recommendation-box">
+              <div class="recommendation-header">
+                <i class="fas fa-robot"></i> AI Recommended Retention Action
+              </div>
+              <p class="recommendation-text" id="recommendationText">
+                Customer is on a flexible month-to-month contract. Consider offering a discounted annual plan.
+              </p>
+            </div>
+          </div>
+
+          <!-- Risk Gauge & SHAP Factors -->
+          <div class="card gauge-card">
+            <div class="card-title" style="width: 100%; text-align: center;">Churn Score</div>
+            
+            <div class="gauge-wrapper">
+              <div class="gauge-body">
+                <div class="gauge-fill" id="gaugeFill"></div>
+                <div class="gauge-cover">
+                  <span class="gauge-percent" id="gaugePercent">72%</span>
+                  <span class="gauge-label">Probability</span>
+                </div>
+              </div>
+            </div>
+
+            <div id="riskBadge" class="risk-alert-badge risk-alert-high">
+              <i class="fas fa-exclamation-triangle"></i> CRITICAL RISK
+            </div>
+
+            <div style="width: 100%; margin-top: 1.5rem;">
+              <h4 style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem; text-align: left;">Key Risk Factors</h4>
+              <div id="riskFactorsList"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           TAB 3: LIVE RISK PREDICTOR
+           ========================================== -->
+      <section class="tab-view" id="tab-predictor">
+        <div class="page-header">
+          <h1 class="page-title">Live Risk Predictor</h1>
+          <p class="page-subtitle">Simulate customer scenarios and estimate churn probability instantly.</p>
+        </div>
+
+        <div class="grid-3-1">
+          <div class="card">
+            <form id="livePredictorForm">
+              <div class="form-grid">
+                
+                <div class="form-group">
+                  <label class="form-label" for="tenure">Tenure (Months)</label>
+                  <div class="range-group">
+                    <input type="range" class="range-slider" id="tenure" min="1" max="72" value="12">
+                    <span class="range-value" id="tenureValue">12 Mo</span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="monthlyCharge">Monthly Charge ($)</label>
+                  <div class="range-group">
+                    <input type="range" class="range-slider" id="monthlyCharge" min="18" max="120" value="70">
+                    <span class="range-value" id="monthlyChargeValue">$70</span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="avgGb">Avg Monthly GB Download</label>
+                  <div class="range-group">
+                    <input type="range" class="range-slider" id="avgGb" min="0" max="100" value="25">
+                    <span class="range-value" id="avgGbValue">25 GB</span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="contractSelect">Contract Type</label>
+                  <select class="form-control" id="contractSelect">
+                    <option value="Month-to-month" selected>Month-to-month</option>
+                    <option value="One Year">One Year</option>
+                    <option value="Two Year">Two Year</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="internetSelect">Internet Service Type</label>
+                  <select class="form-control" id="internetSelect">
+                    <option value="Fiber Optic" selected>Fiber Optic</option>
+                    <option value="DSL">DSL</option>
+                    <option value="None">None</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="techSupportSelect">Premium Tech Support</label>
+                  <select class="form-control" id="techSupportSelect">
+                    <option value="No" selected>No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </div>
+
+              </div>
+            </form>
+          </div>
+
+          <!-- Live Score Output Card -->
+          <div class="card gauge-card">
+            <div class="card-title">Live Score Result</div>
+            <div style="font-family: 'Outfit', sans-serif; font-size: 3.5rem; font-weight: 800; color: var(--accent-primary);" id="liveResultPercent">
+              65%
+            </div>
+            <div id="liveResultBadge" class="risk-alert-badge risk-alert-medium" style="margin-top: 0.5rem;">
+              MODERATE RISK
+            </div>
+            <div class="recommendation-box" style="margin-top: 1.5rem; width: 100%; text-align: left;">
+              <div class="recommendation-header"><i class="fas fa-lightbulb"></i> Action Strategy</div>
+              <p class="recommendation-text" id="liveActionBox">Proactively offer annual contract incentive.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           TAB 4: BATCH CSV SCORING
+           ========================================== -->
+      <section class="tab-view" id="tab-batch">
+        <div class="page-header">
+          <h1 class="page-title">Batch CSV Churn Scoring</h1>
+          <p class="page-subtitle">Upload bulk customer data to evaluate risk scores and identify key churn candidates.</p>
+        </div>
+
+        <div class="card">
+          <div class="dropzone" id="csvDropzone">
+            <i class="fas fa-cloud-upload-alt dropzone-icon"></i>
+            <div class="dropzone-text">Drag & drop your customer CSV file here</div>
+            <div class="dropzone-subtext">or click to browse local files (e.g. processed_customers.csv)</div>
+            <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
+          </div>
+        </div>
+
+        <div class="card" id="batchResultsContainer" style="display: none; margin-top: 1.5rem;">
+          <div class="card-title">Scored Customer Data</div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Customer ID</th>
+                  <th>Tenure</th>
+                  <th>Contract</th>
+                  <th>Monthly Charge</th>
+                  <th>Internet Type</th>
+                  <th>Churn Risk</th>
+                </tr>
+              </thead>
+              <tbody id="batchResultsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>ChurnGuard AI &copy; 2026. Custom HTML5 &amp; Vanilla CSS Dashboard for Customer Churn Prediction.</p>
+  </footer>
+
+  <!-- App JavaScript Modules -->
+  <script src="js/charts.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

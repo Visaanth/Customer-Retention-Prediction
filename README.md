@@ -30,6 +30,26 @@ We need to `predict` whether the customer will `churn`, `stay` or `join` the com
 | Decision Tree | 77.29% |
 | XGB_Classifier | 80.86% |
 
+## 🌐 HTML, CSS & JS Web Dashboard
+
+A custom, responsive web application for real-time churn prediction, executive KPI analytics, customer lookup, and batch CSV scoring:
+
+- **Executive Analytics Dashboard**: Interactive Chart.js charts for contract distributions, tenure impacts, monthly charges risk curve, and top churn drivers.
+- **Customer Risk Lookup**: Search customer profiles, view predicted churn risk gauge meter, top risk factors, and AI retention recommendations.
+- **Live Risk Predictor**: Form with sliders and controls for real-time risk score calculations.
+- **Batch CSV Analysis**: Drag-and-drop CSV file uploader with filterable predictions.
+
+### 🚀 Running the Web Dashboard
+
+```bash
+# Option 1: Start the Python web & REST API server
+python server.py
+
+# Then open http://localhost:8000 in your browser
+```
+
+Or simply open `index.html` directly in any web browser for offline standalone mode!
+
 <br>
 
 ## 👉 Application
