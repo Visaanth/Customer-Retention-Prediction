@@ -4,398 +4,952 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="AI-Powered Telecom Customer Churn Prediction and Retention Intelligence Dashboard">
-  <title>Customer Churn Intelligence Dashboard</title>
-
-  <!-- Google Fonts & FontAwesome -->
+  <title>ChurnGuard AI — Customer Retention Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg-base: #0f172a;
+      --bg-surface: #1e293b;
+      --bg-elevated: #2d3f55;
+      --glass: rgba(30,41,59,0.75);
+      --glass-hover: rgba(45,63,85,0.85);
+      --border: rgba(255,255,255,0.1);
+      --border-glow: rgba(99,102,241,0.45);
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-subtle: #64748b;
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --accent-glow: rgba(99,102,241,0.25);
+      --purple: #a855f7;
+      --cyan: #06b6d4;
+      --green: #10b981;
+      --green-bg: rgba(16,185,129,0.12);
+      --green-border: rgba(16,185,129,0.3);
+      --yellow: #f59e0b;
+      --yellow-bg: rgba(245,158,11,0.12);
+      --yellow-border: rgba(245,158,11,0.3);
+      --red: #ef4444;
+      --red-bg: rgba(239,68,68,0.12);
+      --red-border: rgba(239,68,68,0.3);
+      --shadow: 0 4px 24px rgba(0,0,0,0.35);
+      --shadow-glow: 0 0 24px rgba(99,102,241,0.2);
+      --r-sm: 8px; --r-md: 14px; --r-lg: 20px; --r-full: 9999px;
+      --t: 0.25s cubic-bezier(.4,0,.2,1);
+    }
+    [data-theme="light"] {
+      --bg-base: #f0f4ff;
+      --bg-surface: #ffffff;
+      --bg-elevated: #e2e8f0;
+      --glass: rgba(255,255,255,0.88);
+      --glass-hover: rgba(240,244,255,0.95);
+      --border: rgba(0,0,0,0.08);
+      --text: #0f172a;
+      --text-muted: #475569;
+      --text-subtle: #94a3b8;
+      --shadow: 0 4px 24px rgba(0,0,0,0.08);
+      --shadow-glow: 0 0 24px rgba(99,102,241,0.12);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg-base);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background var(--t), color var(--t);
+      overflow-x: hidden;
+    }
 
-  <!-- Chart.js Library -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    /* === ANIMATED BACKGROUND === */
+    .bg-blobs { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+    .blob {
+      position:absolute; border-radius:50%; filter:blur(100px); opacity:0.12;
+      animation: bfloat 20s ease-in-out infinite alternate;
+    }
+    .blob1 { width:600px; height:600px; background:var(--accent); top:-150px; left:-150px; }
+    .blob2 { width:500px; height:500px; background:var(--purple); bottom:-100px; right:-100px; animation-delay:-7s; }
+    .blob3 { width:380px; height:380px; background:var(--cyan); top:45%; left:45%; animation-delay:-14s; }
+    @keyframes bfloat {
+      0%   { transform: translate(0,0) scale(1); }
+      50%  { transform: translate(60px,40px) scale(1.08); }
+      100% { transform: translate(-40px,70px) scale(0.95); }
+    }
 
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="css/styles.css">
+    /* === TOP NAVBAR === */
+    .topnav {
+      position: sticky; top: 0; z-index: 200;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.85rem 2rem;
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 2px 20px rgba(0,0,0,0.15);
+    }
+    .logo { display:flex; align-items:center; gap:0.75rem; text-decoration:none; }
+    .logo-icon {
+      width:42px; height:42px; border-radius:var(--r-md);
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.1rem; color:white; box-shadow: var(--shadow-glow);
+      flex-shrink:0;
+    }
+    .logo-text {
+      font-family:'Outfit',sans-serif; font-size:1.3rem; font-weight:800;
+      background:linear-gradient(135deg,#e2e8f0,#94a3b8);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    [data-theme="light"] .logo-text {
+      background:linear-gradient(135deg,#1e293b,#475569);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .nav-right { display:flex; align-items:center; gap:1rem; }
+    .status-pill {
+      display:inline-flex; align-items:center; gap:0.45rem;
+      padding:0.3rem 0.85rem; border-radius:var(--r-full);
+      background:var(--green-bg); border:1px solid var(--green-border);
+      color:var(--green); font-size:0.8rem; font-weight:600;
+    }
+    .pulse { width:8px; height:8px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.5;transform:scale(0.75);} }
+    .icon-btn {
+      width:40px; height:40px; border-radius:var(--r-md); border:1px solid var(--border);
+      background:var(--bg-elevated); color:var(--text); cursor:pointer;
+      display:flex; align-items:center; justify-content:center; font-size:1rem;
+      transition:var(--t);
+    }
+    .icon-btn:hover { background:var(--accent); border-color:var(--accent); color:white; }
+
+    /* === MAIN LAYOUT === */
+    .app { display:flex; flex:1; max-width:1640px; margin:0 auto; width:100%; padding:1.5rem 2rem; gap:1.75rem; position:relative; z-index:1; }
+    
+    /* === SIDEBAR === */
+    .sidebar { width:250px; flex-shrink:0; }
+    .sidenav { list-style:none; display:flex; flex-direction:column; gap:0.4rem; }
+    .nav-item {
+      display:flex; align-items:center; gap:0.85rem;
+      padding:0.8rem 1.1rem; border-radius:var(--r-md);
+      cursor:pointer; color:var(--text-muted); font-size:0.9rem; font-weight:500;
+      border:1px solid transparent; transition:var(--t); user-select:none;
+    }
+    .nav-item:hover { background:var(--glass-hover); color:var(--text); border-color:var(--border); }
+    .nav-item.active {
+      background:linear-gradient(135deg,rgba(99,102,241,0.18),rgba(168,85,247,0.18));
+      border-color:var(--border-glow); color:var(--text); font-weight:600;
+      box-shadow:var(--shadow-glow);
+    }
+    .nav-item.active .nav-icon { color:var(--accent); }
+    .nav-icon { width:20px; text-align:center; font-size:1rem; }
+
+    /* === CONTENT === */
+    .content { flex:1; min-width:0; display:flex; flex-direction:column; gap:1.75rem; }
+    .tab-view { display:none; animation:fadeUp 0.3s ease; }
+    .tab-view.active { display:block; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+
+    /* === PAGE HEADER === */
+    .page-header { margin-bottom:1.5rem; }
+    .page-title { font-family:'Outfit',sans-serif; font-size:2rem; font-weight:800; margin-bottom:0.25rem; }
+    .page-sub { color:var(--text-muted); font-size:0.9rem; }
+
+    /* === GLASS CARD === */
+    .card {
+      background:var(--glass);
+      backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+      border:1px solid var(--border); border-radius:var(--r-lg);
+      box-shadow:var(--shadow); transition:var(--t);
+      padding:1.5rem;
+    }
+    .card:hover { border-color:var(--border-glow); box-shadow:var(--shadow-glow), var(--shadow); }
+    .card-title {
+      font-family:'Outfit',sans-serif; font-size:1.05rem; font-weight:700;
+      margin-bottom:1.1rem; display:flex; align-items:center; gap:0.5rem;
+    }
+    .card-title i { font-size:1rem; }
+
+    /* === GRIDS === */
+    .grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:1.25rem; margin-bottom:1.5rem; }
+    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+    .grid-2-1 { display:grid; grid-template-columns:2fr 1fr; gap:1.5rem; }
+    @media(max-width:1200px) { .grid-4{grid-template-columns:repeat(2,1fr);} }
+    @media(max-width:900px) { .app{flex-direction:column;} .sidebar{width:100%;} .grid-2,.grid-2-1{grid-template-columns:1fr;} }
+    @media(max-width:600px) { .grid-4{grid-template-columns:1fr;} .app{padding:1rem;} }
+
+    /* === KPI CARDS === */
+    .kpi-card { display:flex; align-items:center; gap:1.2rem; padding:1.25rem 1.5rem; }
+    .kpi-icon {
+      width:54px; height:54px; border-radius:var(--r-md); flex-shrink:0;
+      display:flex; align-items:center; justify-content:center; font-size:1.4rem;
+    }
+    .kpi-icon.indigo { background:rgba(99,102,241,0.15); color:#818cf8; }
+    .kpi-icon.red    { background:var(--red-bg);    color:#f87171; }
+    .kpi-icon.amber  { background:var(--yellow-bg); color:#fbbf24; }
+    .kpi-icon.green  { background:var(--green-bg);  color:#34d399; }
+    .kpi-label { font-size:0.8rem; color:var(--text-muted); font-weight:500; text-transform:uppercase; letter-spacing:0.5px; }
+    .kpi-value { font-family:'Outfit',sans-serif; font-size:2rem; font-weight:800; line-height:1.1; }
+    .kpi-trend { font-size:0.78rem; margin-top:0.2rem; display:flex; align-items:center; gap:0.25rem; }
+    .trend-up { color:var(--red); } .trend-dn { color:var(--green); }
+
+    /* === CHART WRAPPER === */
+    .chart-wrap { position:relative; height:300px; width:100%; }
+
+    /* === SEARCH === */
+    .search-wrap { position:relative; max-width:400px; }
+    .search-input {
+      width:100%; padding:0.7rem 1rem 0.7rem 2.6rem;
+      background:var(--bg-elevated); border:1px solid var(--border);
+      border-radius:var(--r-md); color:var(--text); font-size:0.9rem;
+      outline:none; transition:var(--t); font-family:'Inter',sans-serif;
+    }
+    .search-input:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
+    .search-icon { position:absolute; left:0.9rem; top:50%; transform:translateY(-50%); color:var(--text-subtle); font-size:0.85rem; }
+    .dropdown {
+      position:absolute; top:calc(100% + 6px); left:0; right:0;
+      background:var(--bg-surface); border:1px solid var(--border);
+      border-radius:var(--r-md); max-height:220px; overflow-y:auto;
+      z-index:60; box-shadow:var(--shadow); display:none;
+    }
+    .dropdown.open { display:block; }
+    .drop-item {
+      padding:0.6rem 1rem; cursor:pointer; display:flex;
+      justify-content:space-between; font-size:0.875rem; transition:var(--t);
+    }
+    .drop-item:hover { background:var(--bg-elevated); color:var(--accent); }
+
+    /* === PROFILE CARD === */
+    .profile-avatar {
+      width:56px; height:56px; border-radius:50%; flex-shrink:0;
+      background:linear-gradient(135deg,var(--accent),var(--purple));
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.4rem; font-weight:800; color:white; box-shadow:var(--shadow-glow);
+    }
+    .profile-header { display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem; }
+    .profile-name { font-size:1.15rem; font-weight:700; }
+    .profile-sub { font-size:0.8rem; color:var(--text-muted); margin-top:0.1rem; }
+    .profile-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.85rem; }
+    .pfield {
+      background:rgba(0,0,0,0.12); border:1px solid var(--border);
+      border-radius:var(--r-md); padding:0.75rem 1rem;
+    }
+    [data-theme="light"] .pfield { background:rgba(0,0,0,0.04); }
+    .pfield-label { font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; }
+    .pfield-value { font-size:0.95rem; font-weight:600; margin-top:0.15rem; }
+
+    /* === RISK BADGES === */
+    .risk-badge {
+      display:inline-flex; align-items:center; gap:0.45rem;
+      padding:0.45rem 1.1rem; border-radius:var(--r-full); font-weight:700; font-size:0.88rem;
+    }
+    .risk-high   { background:var(--red-bg);    border:1px solid var(--red-border);    color:var(--red); }
+    .risk-medium { background:var(--yellow-bg);  border:1px solid var(--yellow-border); color:var(--yellow); }
+    .risk-low    { background:var(--green-bg);   border:1px solid var(--green-border);  color:var(--green); }
+
+    /* === GAUGE METER === */
+    .gauge-card { display:flex; flex-direction:column; align-items:center; padding:2rem 1.5rem; text-align:center; }
+    .gauge-svg-wrap { position:relative; margin:0.5rem 0; }
+    .gauge-svg-wrap svg { overflow:visible; }
+    .gauge-pct {
+      position:absolute; bottom:2px; left:50%; transform:translateX(-50%);
+      font-family:'Outfit',sans-serif; font-size:2.2rem; font-weight:800;
+    }
+    .gauge-label-text { font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-top:0.1rem; }
+
+    /* === AI RECOMMENDATION BOX === */
+    .ai-box {
+      margin-top:1.25rem; padding:1.1rem 1.2rem;
+      background:linear-gradient(135deg,rgba(99,102,241,0.12),rgba(168,85,247,0.12));
+      border:1px solid var(--border-glow); border-radius:var(--r-md);
+    }
+    .ai-box-head { display:flex; align-items:center; gap:0.5rem; color:#a78bfa; font-weight:600; font-size:0.85rem; margin-bottom:0.4rem; }
+    .ai-box-text { font-size:0.88rem; line-height:1.55; }
+
+    /* === RISK FACTOR LIST === */
+    .rfactor { display:flex; justify-content:space-between; align-items:center; padding:0.55rem 0; border-bottom:1px solid var(--border); }
+    .rfactor:last-child { border-bottom:none; }
+    .rfactor-name { font-size:0.85rem; }
+    .pill {
+      padding:0.2rem 0.7rem; border-radius:var(--r-full);
+      font-size:0.75rem; font-weight:600; white-space:nowrap;
+    }
+    .pill-red    { background:var(--red-bg);    border:1px solid var(--red-border);    color:var(--red); }
+    .pill-yellow { background:var(--yellow-bg);  border:1px solid var(--yellow-border); color:var(--yellow); }
+    .pill-green  { background:var(--green-bg);   border:1px solid var(--green-border);  color:var(--green); }
+
+    /* === FORM CONTROLS === */
+    .form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1.25rem; }
+    .fg { display:flex; flex-direction:column; gap:0.4rem; }
+    .fl { font-size:0.82rem; font-weight:500; color:var(--text-muted); }
+    .fc {
+      padding:0.65rem 1rem; background:var(--bg-elevated); border:1px solid var(--border);
+      border-radius:var(--r-md); color:var(--text); font-size:0.88rem;
+      outline:none; transition:var(--t); font-family:'Inter',sans-serif; appearance:none;
+    }
+    .fc:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
+    .range-wrap { display:flex; align-items:center; gap:0.85rem; }
+    .range-slider { flex:1; accent-color:var(--accent); cursor:pointer; }
+    .range-val { font-weight:700; color:var(--accent); min-width:52px; text-align:right; font-size:0.9rem; }
+
+    /* === LIVE SCORE === */
+    .live-score-big {
+      font-family:'Outfit',sans-serif; font-size:4rem; font-weight:800;
+      background:linear-gradient(135deg,var(--accent),var(--purple));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+      line-height:1; margin:0.5rem 0;
+    }
+
+    /* === DROPZONE === */
+    .dropzone {
+      border:2px dashed var(--border); border-radius:var(--r-lg);
+      padding:3rem 2rem; text-align:center; cursor:pointer;
+      transition:var(--t); background:rgba(0,0,0,0.04);
+    }
+    .dropzone:hover,.dropzone.over { border-color:var(--accent); background:var(--accent-glow); }
+    .dz-icon { font-size:2.8rem; color:var(--accent); margin-bottom:0.75rem; }
+    .dz-text { font-size:1rem; font-weight:600; }
+    .dz-sub { font-size:0.82rem; color:var(--text-muted); margin-top:0.4rem; }
+
+    /* === TABLE === */
+    .tbl-wrap { width:100%; overflow-x:auto; border-radius:var(--r-md); border:1px solid var(--border); }
+    table { width:100%; border-collapse:collapse; font-size:0.86rem; }
+    thead th {
+      background:var(--bg-elevated); padding:0.85rem 1rem;
+      font-weight:600; color:var(--text-muted); border-bottom:1px solid var(--border);
+      text-align:left; white-space:nowrap; text-transform:uppercase; font-size:0.75rem; letter-spacing:0.5px;
+    }
+    tbody td { padding:0.8rem 1rem; border-bottom:1px solid var(--border); color:var(--text); }
+    tbody tr:hover { background:var(--glass-hover); }
+    tbody tr:last-child td { border-bottom:none; }
+
+    /* === BTN === */
+    .btn-primary {
+      display:inline-flex; align-items:center; gap:0.5rem;
+      padding:0.8rem 1.75rem; border-radius:var(--r-md); border:none;
+      background:linear-gradient(135deg,var(--accent),var(--purple));
+      color:white; font-weight:600; font-size:0.9rem; cursor:pointer;
+      box-shadow:var(--shadow-glow); transition:var(--t); font-family:'Inter',sans-serif;
+    }
+    .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(99,102,241,0.45); }
+    .btn-primary:active { transform:translateY(0); }
+
+    /* === SECTION DIVIDER === */
+    .section-flex { display:flex; justify-content:space-between; align-items:flex-end; gap:1rem; flex-wrap:wrap; margin-bottom:1.5rem; }
+
+    /* === FOOTER === */
+    footer {
+      text-align:center; padding:1.5rem; font-size:0.82rem;
+      color:var(--text-subtle); border-top:1px solid var(--border);
+      background:var(--glass); backdrop-filter:blur(12px); position:relative; z-index:1;
+    }
+
+    /* scrollbar */
+    ::-webkit-scrollbar { width:6px; height:6px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:var(--bg-elevated); border-radius:3px; }
+    ::-webkit-scrollbar-thumb:hover { background:var(--accent); }
+  </style>
 </head>
 <body>
 
-  <!-- Animated Mesh Background -->
-  <div class="bg-mesh">
-    <div class="bg-blob bg-blob-1"></div>
-    <div class="bg-blob bg-blob-2"></div>
-    <div class="bg-blob bg-blob-3"></div>
+<!-- Animated Background -->
+<div class="bg-blobs">
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+  <div class="blob blob3"></div>
+</div>
+
+<!-- Top Navigation -->
+<header class="topnav">
+  <div class="logo">
+    <div class="logo-icon"><i class="fas fa-chart-line"></i></div>
+    <span class="logo-text">ChurnGuard AI</span>
   </div>
-
-  <!-- Top Navigation Bar -->
-  <header class="top-nav">
-    <div class="logo-container">
-      <div class="logo-icon">
-        <i class="fas fa-chart-line" style="color: white;"></i>
-      </div>
-      <span class="logo-text">ChurnGuard AI</span>
+  <div class="nav-right">
+    <div class="status-pill">
+      <div class="pulse"></div>
+      <span>XGBoost ML Active</span>
     </div>
+    <button class="icon-btn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme">
+      <i class="fas fa-sun" id="themeIcon"></i>
+    </button>
+  </div>
+</header>
 
-    <div class="nav-actions">
-      <div class="status-badge" id="systemStatusBadge">
-        <span class="status-dot"></span>
-        <span>XGBoost ML Active</span>
+<!-- App Layout -->
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <ul class="sidenav">
+      <li class="nav-item active" data-tab="overview">
+        <i class="fas fa-chart-pie nav-icon"></i> Dashboard Analytics
+      </li>
+      <li class="nav-item" data-tab="lookup">
+        <i class="fas fa-user-magnifying-glass nav-icon"></i> Customer Lookup
+      </li>
+      <li class="nav-item" data-tab="predictor">
+        <i class="fas fa-sliders nav-icon"></i> Live Risk Predictor
+      </li>
+      <li class="nav-item" data-tab="batch">
+        <i class="fas fa-file-csv nav-icon"></i> Batch CSV Scoring
+      </li>
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="content">
+
+    <!-- =======================================
+         TAB 1: DASHBOARD OVERVIEW
+    ======================================= -->
+    <section id="tab-overview" class="tab-view active">
+      <div class="page-header">
+        <h1 class="page-title">Executive Churn Overview</h1>
+        <p class="page-sub">Real-time predictive analytics and risk indicators across your customer base.</p>
       </div>
-      <button class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Light/Dark Theme" aria-label="Toggle Light or Dark Theme">
-        <i class="fas fa-sun"></i>
-      </button>
-    </div>
-  </header>
 
-  <!-- App Main Container -->
-  <div class="app-container">
-    
-    <!-- Sidebar Navigation -->
-    <aside class="sidebar">
-      <ul class="nav-tabs" role="tablist">
-        <li class="nav-tab-item active" data-tab="overview" role="tab" aria-selected="true" tabindex="0">
-          <i class="fas fa-chart-pie"></i>
-          <span>Dashboard Analytics</span>
-        </li>
-        <li class="nav-tab-item" data-tab="lookup" role="tab" aria-selected="false" tabindex="0">
-          <i class="fas fa-user-search"></i>
-          <span>Customer Lookup</span>
-        </li>
-        <li class="nav-tab-item" data-tab="predictor" role="tab" aria-selected="false" tabindex="0">
-          <i class="fas fa-sliders-h"></i>
-          <span>Live Risk Predictor</span>
-        </li>
-        <li class="nav-tab-item" data-tab="batch" role="tab" aria-selected="false" tabindex="0">
-          <i class="fas fa-file-csv"></i>
-          <span>Batch CSV Scoring</span>
-        </li>
-      </ul>
-    </aside>
-
-    <!-- Main Content Views -->
-    <main class="main-content">
-
-      <!-- ==========================================
-           TAB 1: OVERVIEW & ANALYTICS DASHBOARD
-           ========================================== -->
-      <section class="tab-view active" id="tab-overview">
-        <div class="page-header">
-          <h1 class="page-title">Executive Churn Overview</h1>
-          <p class="page-subtitle">Real-time predictive analytics and risk indicators across your customer base.</p>
-        </div>
-
-        <!-- 4 KPI Cards Grid -->
-        <div class="grid-4" style="margin-bottom: 1.5rem;">
-          <div class="card kpi-card">
-            <div class="kpi-icon-wrapper kpi-icon-indigo">
-              <i class="fas fa-users"></i>
-            </div>
-            <div class="kpi-info">
-              <span class="kpi-label">Total Active Customers</span>
-              <span class="kpi-value" id="statTotalCustomers">7,043</span>
-              <span class="kpi-trend trend-down"><i class="fas fa-arrow-down"></i> -1.2% this month</span>
-            </div>
-          </div>
-
-          <div class="card kpi-card">
-            <div class="kpi-icon-wrapper kpi-icon-red">
-              <i class="fas fa-user-minus"></i>
-            </div>
-            <div class="kpi-info">
-              <span class="kpi-label">Overall Churn Rate</span>
-              <span class="kpi-value" id="statChurnRate">26.5%</span>
-              <span class="kpi-trend trend-up"><i class="fas fa-arrow-up"></i> +0.4% baseline</span>
-            </div>
-          </div>
-
-          <div class="card kpi-card">
-            <div class="kpi-icon-wrapper kpi-icon-yellow">
-              <i class="fas fa-shield-exclamation"></i>
-            </div>
-            <div class="kpi-info">
-              <span class="kpi-label">High-Risk Customers</span>
-              <span class="kpi-value" id="statHighRiskCount">1,869</span>
-              <span class="kpi-trend trend-up"><i class="fas fa-exclamation-triangle"></i> Requires Action</span>
-            </div>
-          </div>
-
-          <div class="card kpi-card">
-            <div class="kpi-icon-wrapper kpi-icon-green">
-              <i class="fas fa-dollar-sign"></i>
-            </div>
-            <div class="kpi-info">
-              <span class="kpi-label">Monthly Revenue at Risk</span>
-              <span class="kpi-value" id="statRevenueAtRisk">$142,500</span>
-              <span class="kpi-trend trend-down"><i class="fas fa-shield-alt"></i> Retention Priority</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- 2x2 Charts Grid -->
-        <div class="grid-2">
-          <div class="card">
-            <div class="card-title">
-              <span><i class="fas fa-file-contract" style="color: var(--accent-primary); margin-right: 0.5rem;"></i> Churn Rate by Contract Type</span>
-            </div>
-            <div class="chart-container">
-              <canvas id="contractChart"></canvas>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-title">
-              <span><i class="fas fa-history" style="color: var(--accent-secondary); margin-right: 0.5rem;"></i> Tenure vs Churn Impact</span>
-            </div>
-            <div class="chart-container">
-              <canvas id="tenureChart"></canvas>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-title">
-              <span><i class="fas fa-chart-line" style="color: var(--accent-purple); margin-right: 0.5rem;"></i> Monthly Charges Risk Curve</span>
-            </div>
-            <div class="chart-container">
-              <canvas id="chargesChart"></canvas>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-title">
-              <span><i class="fas fa-list-ol" style="color: var(--risk-medium); margin-right: 0.5rem;"></i> Top Churn Drivers</span>
-            </div>
-            <div class="chart-container">
-              <canvas id="reasonsChart"></canvas>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ==========================================
-           TAB 2: CUSTOMER RISK LOOKUP
-           ========================================== -->
-      <section class="tab-view" id="tab-lookup">
-        <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
+      <!-- KPI Grid -->
+      <div class="grid-4">
+        <div class="card kpi-card">
+          <div class="kpi-icon indigo"><i class="fas fa-users"></i></div>
           <div>
-            <h1 class="page-title">Customer Risk Lookup</h1>
-            <p class="page-subtitle">Inspect individual customer profiles, predicted churn probabilities, and AI retention plans.</p>
-          </div>
-
-          <!-- Customer Search Dropdown -->
-          <div class="search-box-container">
-            <i class="fas fa-search search-icon"></i>
-            <input type="text" class="search-input" id="customerSearchInput" placeholder="Search Customer ID (e.g. 7590-VHVEG)..." autocomplete="off">
-            <div class="customer-dropdown-list" id="customerDropdownList"></div>
+            <div class="kpi-label">Total Customers</div>
+            <div class="kpi-value" id="kpi1">7,043</div>
+            <div class="kpi-trend trend-dn"><i class="fas fa-arrow-down"></i> −1.2% this month</div>
           </div>
         </div>
-
-        <div class="grid-3-1">
-          <!-- Profile Card -->
-          <div class="card">
-            <div class="profile-header-badge">
-              <div class="avatar-circle" id="profileAvatarLetter">C</div>
-              <div class="profile-name-id">
-                <h3 id="profileCustId">7590-VHVEG</h3>
-                <span style="font-size: 0.85rem; color: var(--text-muted);">Active Subscriber</span>
-              </div>
-            </div>
-
-            <div class="profile-grid">
-              <div class="profile-field">
-                <div class="profile-field-label">Tenure</div>
-                <div class="profile-field-value" id="profileTenure">1 Month</div>
-              </div>
-              <div class="profile-field">
-                <div class="profile-field-label">Contract Type</div>
-                <div class="profile-field-value" id="profileContract">Month-to-month</div>
-              </div>
-              <div class="profile-field">
-                <div class="profile-field-label">Monthly Charge</div>
-                <div class="profile-field-value" id="profileMonthlyCharge">$29.85</div>
-              </div>
-              <div class="profile-field">
-                <div class="profile-field-label">Internet Type</div>
-                <div class="profile-field-value" id="profileInternetType">DSL</div>
-              </div>
-              <div class="profile-field">
-                <div class="profile-field-label">City</div>
-                <div class="profile-field-value" id="profileCity">Los Angeles</div>
-              </div>
-              <div class="profile-field">
-                <div class="profile-field-label">Tech Support</div>
-                <div class="profile-field-value" id="profileTechSupport">No</div>
-              </div>
-            </div>
-
-            <div class="recommendation-box">
-              <div class="recommendation-header">
-                <i class="fas fa-robot"></i> AI Recommended Retention Action
-              </div>
-              <p class="recommendation-text" id="recommendationText">
-                Customer is on a flexible month-to-month contract. Consider offering a discounted annual plan.
-              </p>
-            </div>
-          </div>
-
-          <!-- Risk Gauge & SHAP Factors -->
-          <div class="card gauge-card">
-            <div class="card-title" style="width: 100%; text-align: center;">Churn Score</div>
-            
-            <div class="gauge-wrapper">
-              <div class="gauge-body">
-                <div class="gauge-fill" id="gaugeFill"></div>
-                <div class="gauge-cover">
-                  <span class="gauge-percent" id="gaugePercent">72%</span>
-                  <span class="gauge-label">Probability</span>
-                </div>
-              </div>
-            </div>
-
-            <div id="riskBadge" class="risk-alert-badge risk-alert-high">
-              <i class="fas fa-exclamation-triangle"></i> CRITICAL RISK
-            </div>
-
-            <div style="width: 100%; margin-top: 1.5rem;">
-              <h4 style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem; text-align: left;">Key Risk Factors</h4>
-              <div id="riskFactorsList"></div>
-            </div>
+        <div class="card kpi-card">
+          <div class="kpi-icon red"><i class="fas fa-user-minus"></i></div>
+          <div>
+            <div class="kpi-label">Overall Churn Rate</div>
+            <div class="kpi-value" id="kpi2">26.5%</div>
+            <div class="kpi-trend trend-up"><i class="fas fa-arrow-up"></i> +0.4% baseline</div>
           </div>
         </div>
-      </section>
-
-      <!-- ==========================================
-           TAB 3: LIVE RISK PREDICTOR
-           ========================================== -->
-      <section class="tab-view" id="tab-predictor">
-        <div class="page-header">
-          <h1 class="page-title">Live Risk Predictor</h1>
-          <p class="page-subtitle">Simulate customer scenarios and estimate churn probability instantly.</p>
-        </div>
-
-        <div class="grid-3-1">
-          <div class="card">
-            <form id="livePredictorForm">
-              <div class="form-grid">
-                
-                <div class="form-group">
-                  <label class="form-label" for="tenure">Tenure (Months)</label>
-                  <div class="range-group">
-                    <input type="range" class="range-slider" id="tenure" min="1" max="72" value="12">
-                    <span class="range-value" id="tenureValue">12 Mo</span>
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label" for="monthlyCharge">Monthly Charge ($)</label>
-                  <div class="range-group">
-                    <input type="range" class="range-slider" id="monthlyCharge" min="18" max="120" value="70">
-                    <span class="range-value" id="monthlyChargeValue">$70</span>
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label" for="avgGb">Avg Monthly GB Download</label>
-                  <div class="range-group">
-                    <input type="range" class="range-slider" id="avgGb" min="0" max="100" value="25">
-                    <span class="range-value" id="avgGbValue">25 GB</span>
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label" for="contractSelect">Contract Type</label>
-                  <select class="form-control" id="contractSelect">
-                    <option value="Month-to-month" selected>Month-to-month</option>
-                    <option value="One Year">One Year</option>
-                    <option value="Two Year">Two Year</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label" for="internetSelect">Internet Service Type</label>
-                  <select class="form-control" id="internetSelect">
-                    <option value="Fiber Optic" selected>Fiber Optic</option>
-                    <option value="DSL">DSL</option>
-                    <option value="None">None</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label" for="techSupportSelect">Premium Tech Support</label>
-                  <select class="form-control" id="techSupportSelect">
-                    <option value="No" selected>No</option>
-                    <option value="Yes">Yes</option>
-                  </select>
-                </div>
-
-              </div>
-            </form>
-          </div>
-
-          <!-- Live Score Output Card -->
-          <div class="card gauge-card">
-            <div class="card-title">Live Score Result</div>
-            <div style="font-family: 'Outfit', sans-serif; font-size: 3.5rem; font-weight: 800; color: var(--accent-primary);" id="liveResultPercent">
-              65%
-            </div>
-            <div id="liveResultBadge" class="risk-alert-badge risk-alert-medium" style="margin-top: 0.5rem;">
-              MODERATE RISK
-            </div>
-            <div class="recommendation-box" style="margin-top: 1.5rem; width: 100%; text-align: left;">
-              <div class="recommendation-header"><i class="fas fa-lightbulb"></i> Action Strategy</div>
-              <p class="recommendation-text" id="liveActionBox">Proactively offer annual contract incentive.</p>
-            </div>
+        <div class="card kpi-card">
+          <div class="kpi-icon amber"><i class="fas fa-circle-exclamation"></i></div>
+          <div>
+            <div class="kpi-label">High-Risk Customers</div>
+            <div class="kpi-value" id="kpi3">1,869</div>
+            <div class="kpi-trend trend-up"><i class="fas fa-triangle-exclamation"></i> Requires Action</div>
           </div>
         </div>
-      </section>
-
-      <!-- ==========================================
-           TAB 4: BATCH CSV SCORING
-           ========================================== -->
-      <section class="tab-view" id="tab-batch">
-        <div class="page-header">
-          <h1 class="page-title">Batch CSV Churn Scoring</h1>
-          <p class="page-subtitle">Upload bulk customer data to evaluate risk scores and identify key churn candidates.</p>
+        <div class="card kpi-card">
+          <div class="kpi-icon green"><i class="fas fa-dollar-sign"></i></div>
+          <div>
+            <div class="kpi-label">Revenue at Risk</div>
+            <div class="kpi-value" id="kpi4">$142.5K</div>
+            <div class="kpi-trend trend-dn"><i class="fas fa-shield-halved"></i> Retention Priority</div>
+          </div>
         </div>
+      </div>
 
+      <!-- Charts Row -->
+      <div class="grid-2" style="margin-bottom:1.5rem">
         <div class="card">
-          <div class="dropzone" id="csvDropzone">
-            <i class="fas fa-cloud-upload-alt dropzone-icon"></i>
-            <div class="dropzone-text">Drag & drop your customer CSV file here</div>
-            <div class="dropzone-subtext">or click to browse local files (e.g. processed_customers.csv)</div>
-            <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
+          <div class="card-title"><i class="fas fa-file-contract" style="color:var(--accent)"></i> Churn Rate by Contract Type</div>
+          <div class="chart-wrap"><canvas id="contractChart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-clock-rotate-left" style="color:var(--cyan)"></i> Tenure vs Churn Impact</div>
+          <div class="chart-wrap"><canvas id="tenureChart"></canvas></div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><i class="fas fa-chart-area" style="color:var(--purple)"></i> Monthly Charges Risk Curve</div>
+          <div class="chart-wrap"><canvas id="chargesChart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-ranking-star" style="color:var(--yellow)"></i> Top Churn Drivers</div>
+          <div class="chart-wrap"><canvas id="reasonsChart"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================
+         TAB 2: CUSTOMER LOOKUP
+    ======================================= -->
+    <section id="tab-lookup" class="tab-view">
+      <div class="section-flex">
+        <div class="page-header" style="margin-bottom:0">
+          <h1 class="page-title">Customer Risk Lookup</h1>
+          <p class="page-sub">Inspect individual profiles, churn probabilities, and AI retention plans.</p>
+        </div>
+        <div class="search-wrap">
+          <i class="fas fa-search search-icon"></i>
+          <input type="text" class="search-input" id="searchInput" placeholder="Search Customer ID…" autocomplete="off">
+          <div class="dropdown" id="searchDropdown"></div>
+        </div>
+      </div>
+
+      <div class="grid-2-1">
+        <div class="card">
+          <div class="profile-header">
+            <div class="profile-avatar" id="profileAvatar">C</div>
+            <div>
+              <div class="profile-name" id="profileId">7590-VHVEG</div>
+              <div class="profile-sub">Active Subscriber</div>
+            </div>
+          </div>
+          <div class="profile-grid">
+            <div class="pfield"><div class="pfield-label">Tenure</div><div class="pfield-value" id="pTenure">1 Month</div></div>
+            <div class="pfield"><div class="pfield-label">Contract</div><div class="pfield-value" id="pContract">Month-to-month</div></div>
+            <div class="pfield"><div class="pfield-label">Monthly Charge</div><div class="pfield-value" id="pCharge">$29.85</div></div>
+            <div class="pfield"><div class="pfield-label">Internet Type</div><div class="pfield-value" id="pInternet">DSL</div></div>
+            <div class="pfield"><div class="pfield-label">City</div><div class="pfield-value" id="pCity">Los Angeles</div></div>
+            <div class="pfield"><div class="pfield-label">Tech Support</div><div class="pfield-value" id="pTech">No</div></div>
+          </div>
+          <div class="ai-box">
+            <div class="ai-box-head"><i class="fas fa-robot"></i> AI Retention Action</div>
+            <div class="ai-box-text" id="aiAction">Loading recommendation…</div>
           </div>
         </div>
 
-        <div class="card" id="batchResultsContainer" style="display: none; margin-top: 1.5rem;">
-          <div class="card-title">Scored Customer Data</div>
-          <div class="table-responsive">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Customer ID</th>
-                  <th>Tenure</th>
-                  <th>Contract</th>
-                  <th>Monthly Charge</th>
-                  <th>Internet Type</th>
-                  <th>Churn Risk</th>
-                </tr>
-              </thead>
-              <tbody id="batchResultsTableBody"></tbody>
-            </table>
+        <div class="card gauge-card">
+          <div class="card-title" style="margin-bottom:0.5rem">Churn Risk Score</div>
+
+          <!-- SVG Gauge -->
+          <div class="gauge-svg-wrap">
+            <svg width="200" height="115" viewBox="0 0 200 115">
+              <defs>
+                <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" style="stop-color:#10b981"/>
+                  <stop offset="50%" style="stop-color:#f59e0b"/>
+                  <stop offset="100%" style="stop-color:#ef4444"/>
+                </linearGradient>
+              </defs>
+              <!-- Background arc -->
+              <path d="M 15,100 A 85,85 0 0,1 185,100" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="18" stroke-linecap="round"/>
+              <!-- Colored arc -->
+              <path id="gaugeArc" d="M 15,100 A 85,85 0 0,1 185,100" fill="none" stroke="url(#gaugeGrad)" stroke-width="18" stroke-linecap="round"
+                stroke-dasharray="0 270" style="transition:stroke-dasharray 1s cubic-bezier(.4,0,.2,1)"/>
+              <!-- Needle -->
+              <line id="gaugeNeedle" x1="100" y1="100" x2="100" y2="22" stroke="white" stroke-width="2.5"
+                stroke-linecap="round" style="transform-origin:100px 100px; transform:rotate(-90deg); transition:transform 1s cubic-bezier(.4,0,.2,1)"/>
+              <circle cx="100" cy="100" r="6" fill="white" opacity="0.9"/>
+            </svg>
+            <div style="position:absolute;bottom:4px;left:50%;transform:translateX(-50%);text-align:center;">
+              <div class="gauge-pct" id="gaugePct">—</div>
+              <div class="gauge-label-text">probability</div>
+            </div>
+          </div>
+
+          <div id="riskBadge" class="risk-badge risk-medium" style="margin-top:0.75rem">
+            <i class="fas fa-circle-exclamation"></i> ANALYZING…
+          </div>
+
+          <div style="width:100%;margin-top:1.5rem;">
+            <div style="font-size:0.8rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.6rem;">Key Risk Factors</div>
+            <div id="riskFactors"></div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-    </main>
-  </div>
+    <!-- =======================================
+         TAB 3: LIVE PREDICTOR
+    ======================================= -->
+    <section id="tab-predictor" class="tab-view">
+      <div class="page-header">
+        <h1 class="page-title">Live Risk Predictor</h1>
+        <p class="page-sub">Simulate customer scenarios and get instant churn risk scores.</p>
+      </div>
+      <div class="grid-2-1">
+        <div class="card">
+          <div class="card-title"><i class="fas fa-sliders" style="color:var(--accent)"></i> Customer Parameters</div>
+          <form id="predictForm" class="form-grid">
+            <div class="fg">
+              <label class="fl">Tenure (Months)</label>
+              <div class="range-wrap">
+                <input type="range" class="range-slider" id="tenure" min="1" max="72" value="12">
+                <span class="range-val" id="tenureVal">12 Mo</span>
+              </div>
+            </div>
+            <div class="fg">
+              <label class="fl">Monthly Charge ($)</label>
+              <div class="range-wrap">
+                <input type="range" class="range-slider" id="charge" min="18" max="120" value="70">
+                <span class="range-val" id="chargeVal">$70</span>
+              </div>
+            </div>
+            <div class="fg">
+              <label class="fl">Avg Monthly GB Download</label>
+              <div class="range-wrap">
+                <input type="range" class="range-slider" id="gbdown" min="0" max="100" value="25">
+                <span class="range-val" id="gbdownVal">25 GB</span>
+              </div>
+            </div>
+            <div class="fg">
+              <label class="fl">Contract Type</label>
+              <select class="fc" id="pContract">
+                <option value="Month-to-month">Month-to-month</option>
+                <option value="One Year">One Year</option>
+                <option value="Two Year">Two Year</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label class="fl">Internet Service Type</label>
+              <select class="fc" id="pInternet">
+                <option value="Fiber Optic">Fiber Optic</option>
+                <option value="DSL">DSL</option>
+                <option value="None">None</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label class="fl">Premium Tech Support</label>
+              <select class="fc" id="pTechSupport">
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+              </select>
+            </div>
+          </form>
+        </div>
 
-  <!-- Footer -->
-  <footer>
-    <p>ChurnGuard AI &copy; 2026. Custom HTML5 &amp; Vanilla CSS Dashboard for Customer Churn Prediction.</p>
-  </footer>
+        <div class="card gauge-card">
+          <div class="card-title">Live Score Result</div>
+          <div class="live-score-big" id="liveScore">65%</div>
+          <div id="liveBadge" class="risk-badge risk-medium" style="margin:0.5rem 0">
+            <i class="fas fa-circle-exclamation"></i> MODERATE RISK
+          </div>
+          <div class="ai-box" style="width:100%;text-align:left;margin-top:1.25rem;">
+            <div class="ai-box-head"><i class="fas fa-lightbulb"></i> Action Strategy</div>
+            <div class="ai-box-text" id="liveAction">Proactively offer annual contract incentive.</div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-  <!-- App JavaScript Modules -->
-  <script src="js/charts.js"></script>
-  <script src="js/app.js"></script>
+    <!-- =======================================
+         TAB 4: BATCH CSV
+    ======================================= -->
+    <section id="tab-batch" class="tab-view">
+      <div class="page-header">
+        <h1 class="page-title">Batch CSV Scoring</h1>
+        <p class="page-sub">Upload a customer dataset to evaluate churn risk for all records at once.</p>
+      </div>
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="dropzone" id="dropzone">
+          <div class="dz-icon"><i class="fas fa-cloud-arrow-up"></i></div>
+          <div class="dz-text">Drag &amp; drop your CSV file here</div>
+          <div class="dz-sub">or click to browse · Compatible with processed_customers.csv format</div>
+          <input type="file" id="csvFile" accept=".csv" style="display:none">
+        </div>
+      </div>
+      <div class="card" id="batchResults" style="display:none">
+        <div class="card-title"><i class="fas fa-table" style="color:var(--cyan)"></i> Scored Results</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Customer ID</th><th>Tenure</th><th>Contract</th><th>Monthly Charge</th><th>Internet Type</th><th>Churn Risk</th>
+              </tr>
+            </thead>
+            <tbody id="batchBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  ChurnGuard AI &copy; 2026 &mdash; Built with HTML5, Vanilla CSS &amp; JavaScript &bull; Powered by XGBoost ML
+</footer>
+
+<script>
+/* ================================================================
+   ChurnGuard AI — Application Logic (Self-Contained)
+================================================================ */
+
+const CUSTOMERS = [
+  {id:'7590-VHVEG',tenure:1,contract:'Month-to-month',charge:29.85,internet:'DSL',city:'Los Angeles',tech:'No'},
+  {id:'5575-GNVDE',tenure:34,contract:'One Year',charge:56.95,internet:'DSL',city:'San Diego',tech:'Yes'},
+  {id:'3668-QVRHG',tenure:2,contract:'Month-to-month',charge:53.85,internet:'DSL',city:'San Jose',tech:'No'},
+  {id:'7795-CFOCW',tenure:45,contract:'One Year',charge:42.30,internet:'DSL',city:'San Francisco',tech:'Yes'},
+  {id:'9237-HQJSL',tenure:2,contract:'Month-to-month',charge:70.70,internet:'Fiber Optic',city:'Fresno',tech:'No'},
+  {id:'9305-CDSKC',tenure:8,contract:'Month-to-month',charge:99.65,internet:'Fiber Optic',city:'Sacramento',tech:'No'},
+  {id:'1452-KNGWZ',tenure:22,contract:'Month-to-month',charge:89.10,internet:'Fiber Optic',city:'Long Beach',tech:'No'},
+  {id:'6713-OKOMC',tenure:10,contract:'Month-to-month',charge:29.75,internet:'DSL',city:'Oakland',tech:'No'},
+  {id:'7892-POOKP',tenure:28,contract:'Month-to-month',charge:104.80,internet:'Fiber Optic',city:'Bakersfield',tech:'Yes'},
+  {id:'6388-TABGU',tenure:62,contract:'One Year',charge:56.15,internet:'DSL',city:'Anaheim',tech:'No'},
+  {id:'0840-JOPKL',tenure:3,contract:'Month-to-month',charge:75.90,internet:'Fiber Optic',city:'Riverside',tech:'No'},
+  {id:'4445-PMNSV',tenure:55,contract:'Two Year',charge:39.00,internet:'DSL',city:'Stockton',tech:'Yes'},
+  {id:'2332-DNKMC',tenure:17,contract:'Month-to-month',charge:82.50,internet:'Fiber Optic',city:'Irvine',tech:'No'},
+  {id:'8814-TCZJY',tenure:71,contract:'Two Year',charge:24.00,internet:'DSL',city:'Chula Vista',tech:'Yes'},
+  {id:'3312-PSDUU',tenure:6,contract:'Month-to-month',charge:68.40,internet:'Fiber Optic',city:'Fremont',tech:'No'},
+];
+
+/* ─── Risk Calculation ─── */
+function calcRisk(tenure, charge, contract, internet, tech) {
+  let s = 0.25;
+  if (contract==='Month-to-month') s+=0.35;
+  else if (contract==='One Year') s+=0.05;
+  else if (contract==='Two Year') s-=0.15;
+  if (tenure<6) s+=0.25; else if (tenure<12) s+=0.15; else if (tenure>36) s-=0.20;
+  if (charge>85) s+=0.15;
+  if (internet==='Fiber Optic') s+=0.08;
+  if (tech==='No') s+=0.08;
+  return Math.min(Math.max(s,0.04),0.97);
+}
+
+/* ─── Theme ─── */
+let isDark = true;
+document.getElementById('themeBtn').addEventListener('click',()=>{
+  isDark=!isDark;
+  document.documentElement.setAttribute('data-theme',isDark?'dark':'light');
+  document.getElementById('themeIcon').className = isDark?'fas fa-sun':'fas fa-moon';
+  refreshCharts();
+});
+
+/* ─── Navigation ─── */
+document.querySelectorAll('.nav-item').forEach(item=>{
+  item.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+    document.querySelectorAll('.tab-view').forEach(t=>t.classList.remove('active'));
+    item.classList.add('active');
+    document.getElementById('tab-'+item.dataset.tab).classList.add('active');
+  });
+});
+
+/* ─── Gauge Update ─── */
+function updateGauge(prob, pctEl, needleEl, arcEl, badgeEl) {
+  const pct = Math.round(prob*100);
+  if (pctEl) pctEl.textContent = pct+'%';
+  const arcLen = 270;
+  if (arcEl) arcEl.style.strokeDasharray = `${prob*arcLen} ${arcLen}`;
+  if (needleEl) needleEl.style.transform = `rotate(${-90+prob*180}deg)`;
+  if (badgeEl) {
+    if (prob>0.70) {
+      badgeEl.className='risk-badge risk-high';
+      badgeEl.innerHTML='<i class="fas fa-triangle-exclamation"></i> CRITICAL RISK ('+pct+'%)';
+    } else if (prob>0.40) {
+      badgeEl.className='risk-badge risk-medium';
+      badgeEl.innerHTML='<i class="fas fa-circle-exclamation"></i> MODERATE RISK ('+pct+'%)';
+    } else {
+      badgeEl.className='risk-badge risk-low';
+      badgeEl.innerHTML='<i class="fas fa-circle-check"></i> LOW RISK ('+pct+'%)';
+    }
+  }
+}
+
+/* ─── Risk Factors ─── */
+function renderFactors(c) {
+  const el = document.getElementById('riskFactors');
+  if (!el) return;
+  const fs = [
+    {name:'Month-to-Month Contract', high:c.contract==='Month-to-month', label:c.contract==='Month-to-month'?'High (+35%)':'Low'},
+    {name:'Low Tenure (< 12 Mo)',    high:c.tenure<12,                  label:c.tenure<12?'High (+25%)':'Low'},
+    {name:'Monthly Charge > $85',    high:c.charge>85,                  label:c.charge>85?'Medium (+15%)':'Low'},
+    {name:'No Tech Support',         high:c.tech==='No',                label:c.tech==='No'?'Medium (+8%)':'Low'},
+    {name:'Fiber Optic Internet',    high:c.internet==='Fiber Optic',   label:c.internet==='Fiber Optic'?'Medium (+8%)':'Low'},
+  ];
+  el.innerHTML = fs.map(f=>`
+    <div class="rfactor">
+      <span class="rfactor-name">${f.name}</span>
+      <span class="pill ${f.high?'pill-red':'pill-green'}">${f.label}</span>
+    </div>
+  `).join('');
+}
+
+/* ─── AI Action ─── */
+function getAction(c) {
+  if (c.contract==='Month-to-month') return 'Offer a 15% discount on an annual plan to lock in loyalty.';
+  if (c.tenure<6) return 'New customer: schedule a proactive welcome call with a free 3-month upgrade.';
+  if (c.tech==='No' && c.charge>70) return 'Provide a 6-month free Premium Tech Support trial and a billing review.';
+  if (c.internet==='Fiber Optic') return 'Check local network quality and offer a $10/mo retention credit.';
+  return 'Maintain engagement with quarterly satisfaction check-ins and loyalty rewards.';
+}
+
+/* ─── Customer Lookup ─── */
+function selectCustomer(c) {
+  document.getElementById('profileAvatar').textContent = c.id.charAt(0);
+  document.getElementById('profileId').textContent = c.id;
+  document.getElementById('pTenure').textContent = c.tenure+' Month'+(c.tenure!==1?'s':'');
+  document.getElementById('pContract').textContent = c.contract;
+  document.getElementById('pCharge').textContent = '$'+c.charge.toFixed(2);
+  document.getElementById('pInternet').textContent = c.internet;
+  document.getElementById('pCity').textContent = c.city;
+  document.getElementById('pTech').textContent = c.tech;
+  document.getElementById('aiAction').textContent = getAction(c);
+  const prob = calcRisk(c.tenure,c.charge,c.contract,c.internet,c.tech);
+  updateGauge(prob,
+    document.getElementById('gaugePct'),
+    document.getElementById('gaugeNeedle'),
+    document.getElementById('gaugeArc'),
+    document.getElementById('riskBadge')
+  );
+  renderFactors(c);
+}
+selectCustomer(CUSTOMERS[0]);
+
+/* ─── Search ─── */
+const searchInput = document.getElementById('searchInput');
+const dropdown = document.getElementById('searchDropdown');
+function renderDropdown(q) {
+  const filtered = CUSTOMERS.filter(c=>c.id.toLowerCase().includes(q.toLowerCase())||c.city.toLowerCase().includes(q.toLowerCase())).slice(0,10);
+  dropdown.innerHTML = filtered.length ? filtered.map(c=>`
+    <div class="drop-item" data-id="${c.id}">
+      <b>${c.id}</b> <span style="color:var(--text-muted)">${c.city} · $${c.charge}/mo</span>
+    </div>
+  `).join('') : '<div class="drop-item" style="color:var(--text-muted)">No results found</div>';
+  dropdown.querySelectorAll('.drop-item[data-id]').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const cust = CUSTOMERS.find(c=>c.id===el.dataset.id);
+      if (cust) { selectCustomer(cust); searchInput.value=cust.id; dropdown.classList.remove('open'); }
+    });
+  });
+}
+searchInput.addEventListener('focus',()=>{ renderDropdown(searchInput.value); dropdown.classList.add('open'); });
+searchInput.addEventListener('input',e=>{ renderDropdown(e.target.value); dropdown.classList.add('open'); });
+document.addEventListener('click',e=>{ if (!searchInput.contains(e.target)&&!dropdown.contains(e.target)) dropdown.classList.remove('open'); });
+
+/* ─── Live Predictor ─── */
+function runPredictor() {
+  const tenure = +document.getElementById('tenure').value;
+  const charge = +document.getElementById('charge').value;
+  const contract = document.getElementById('pContract').value;
+  const internet = document.getElementById('pInternet').value;
+  const tech = document.getElementById('pTechSupport').value;
+  const prob = calcRisk(tenure,charge,contract,internet,tech);
+  const pct = Math.round(prob*100);
+  document.getElementById('liveScore').textContent = pct+'%';
+  const badge = document.getElementById('liveBadge');
+  if (prob>0.70) { badge.className='risk-badge risk-high'; badge.innerHTML='<i class="fas fa-triangle-exclamation"></i> HIGH RISK'; }
+  else if (prob>0.40) { badge.className='risk-badge risk-medium'; badge.innerHTML='<i class="fas fa-circle-exclamation"></i> MODERATE RISK'; }
+  else { badge.className='risk-badge risk-low'; badge.innerHTML='<i class="fas fa-circle-check"></i> LOW RISK'; }
+  let action = 'Standard customer maintenance program.';
+  if (contract==='Month-to-month') action='Pitch a 1-year contract with 10% monthly discount.';
+  else if (tenure<6) action='High early-churn risk: assign dedicated account executive.';
+  else if (charge>90) action='Offer bundle optimization to reduce price-sensitivity churn.';
+  document.getElementById('liveAction').textContent = action;
+}
+['tenure','charge','gbdown'].forEach(id=>{
+  const el=document.getElementById(id), val=document.getElementById(id+'Val');
+  el.addEventListener('input',()=>{
+    val.textContent = id==='charge'?'$'+el.value:(id==='tenure'?el.value+' Mo':el.value+' GB');
+    runPredictor();
+  });
+});
+['pContract','pInternet','pTechSupport'].forEach(id=>document.getElementById(id).addEventListener('change',runPredictor));
+runPredictor();
+
+/* ─── Batch CSV ─── */
+const dz = document.getElementById('dropzone');
+const csvFile = document.getElementById('csvFile');
+dz.addEventListener('click',()=>csvFile.click());
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');if(e.dataTransfer.files[0])processCSV(e.dataTransfer.files[0]);});
+csvFile.addEventListener('change',()=>{if(csvFile.files[0])processCSV(csvFile.files[0]);});
+function processCSV(file) {
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const lines=e.target.result.split('\n').filter(l=>l.trim());
+    if(lines.length<2)return;
+    const headers=lines[0].split(',').map(h=>h.trim().replace(/^"|"$/g,''));
+    const rows=lines.slice(1,51).map((line,i)=>{
+      const vals=line.split(',').map(v=>v.trim().replace(/^"|"$/g,''));
+      const r={};headers.forEach((h,j)=>r[h]=vals[j]);
+      r['Customer ID']=r['Customer ID']||'CUST-'+(1000+i);
+      return r;
+    });
+    const body=document.getElementById('batchBody');
+    body.innerHTML=rows.map(r=>{
+      const t=parseFloat(r['Tenure in Months']||12),c=parseFloat(r['Monthly Charge']||70);
+      const p=calcRisk(t,c,r['Contract']||'Month-to-month',r['Internet Type']||'Fiber Optic',r['Premium Tech Support']||'No');
+      const pct=Math.round(p*100);
+      const cls=p>0.7?'pill-red':p>0.4?'pill-yellow':'pill-green';
+      const label=p>0.7?'HIGH ('+pct+'%)':p>0.4?'MED ('+pct+'%)':'LOW ('+pct+'%)';
+      return `<tr><td><b>${r['Customer ID']}</b></td><td>${t} Mo</td><td>${r['Contract']||'Month-to-month'}</td><td>$${c}</td><td>${r['Internet Type']||'—'}</td><td><span class="pill ${cls}">${label}</span></td></tr>`;
+    }).join('');
+    document.getElementById('batchResults').style.display='block';
+  };
+  reader.readAsText(file);
+}
+
+/* ─── Charts ─── */
+let charts={};
+function chartColors() {
+  const dark=document.documentElement.getAttribute('data-theme')!=='light';
+  return {
+    text: dark?'#94a3b8':'#475569',
+    grid: dark?'rgba(255,255,255,0.07)':'rgba(0,0,0,0.07)',
+    accent:'#6366f1', purple:'#a855f7', cyan:'#06b6d4',
+    red:'#ef4444', amber:'#f59e0b', green:'#10b981'
+  };
+}
+function buildCharts() {
+  const C=chartColors();
+  const defaults = {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ labels:{color:C.text,font:{family:'Inter',size:12},padding:14}}},
+    scales:{}
+  };
+  const scaleOpts = {
+    x:{grid:{color:C.grid},ticks:{color:C.text}},
+    y:{grid:{color:C.grid},ticks:{color:C.text}}
+  };
+
+  if(charts.contract) charts.contract.destroy();
+  charts.contract = new Chart(document.getElementById('contractChart'),{
+    type:'doughnut',
+    data:{
+      labels:['Month-to-Month','One Year','Two Year'],
+      datasets:[{data:[55,24,21],backgroundColor:[C.red,C.amber,C.green],borderWidth:0,hoverOffset:8}]
+    },
+    options:{...defaults, cutout:'68%', plugins:{legend:{position:'bottom',labels:{color:C.text,font:{family:'Inter',size:12},padding:14}},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw}% churn rate`}}}}
+  });
+
+  if(charts.tenure) charts.tenure.destroy();
+  charts.tenure = new Chart(document.getElementById('tenureChart'),{
+    type:'bar',
+    data:{
+      labels:['0-6 Mo','6-12 Mo','12-24 Mo','24-48 Mo','48+ Mo'],
+      datasets:[
+        {label:'Churned %',data:[52,38,25,14,7],backgroundColor:C.red,borderRadius:6},
+        {label:'Retained %',data:[48,62,75,86,93],backgroundColor:C.green,borderRadius:6}
+      ]
+    },
+    options:{...defaults, scales:{...scaleOpts,y:{...scaleOpts.y,max:100}}}
+  });
+
+  if(charts.charges) charts.charges.destroy();
+  charts.charges = new Chart(document.getElementById('chargesChart'),{
+    type:'line',
+    data:{
+      labels:['$20-40','$40-60','$60-80','$80-100','$100+'],
+      datasets:[{
+        label:'Churn Risk %', data:[10,16,30,48,62],
+        borderColor:C.purple, backgroundColor:'rgba(168,85,247,0.15)',
+        fill:true, tension:0.4, pointRadius:5, pointBackgroundColor:C.accent
+      }]
+    },
+    options:{...defaults, plugins:{legend:{display:false}}, scales:{...scaleOpts,y:{...scaleOpts.y,max:100}}}
+  });
+
+  if(charts.reasons) charts.reasons.destroy();
+  charts.reasons = new Chart(document.getElementById('reasonsChart'),{
+    type:'bar',
+    data:{
+      labels:['Higher download speeds','More data offered','Support attitude','Price too high','Network reliability'],
+      datasets:[{label:'Impacted Customers',data:[312,280,210,195,140],backgroundColor:C.cyan,borderRadius:6}]
+    },
+    options:{...defaults, indexAxis:'y', plugins:{legend:{display:false}}, scales:{x:{...scaleOpts.x},y:{grid:{display:false},ticks:{color:C.text}}}}
+  });
+}
+function refreshCharts() {
+  Object.values(charts).forEach(c=>c&&c.destroy());
+  charts={};
+  buildCharts();
+}
+buildCharts();
+</script>
 </body>
 </html>
