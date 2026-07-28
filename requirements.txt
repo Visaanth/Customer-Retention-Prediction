@@ -1,2 +1,0 @@
-# No third-party packages required.
-# api/index.py uses only Python standard library (csv, json, os, urllib).
